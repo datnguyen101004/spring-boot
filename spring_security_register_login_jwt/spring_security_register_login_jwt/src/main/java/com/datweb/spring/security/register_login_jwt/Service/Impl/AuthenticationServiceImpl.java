@@ -1,11 +1,11 @@
 package com.datweb.spring.security.register_login_jwt.Service.Impl;
 
-import com.datweb.spring.security.register_login_jwt.Dto.AccountLoginDto;
+import com.datweb.spring.security.register_login_jwt.Dto.AccountDto;
 import com.datweb.spring.security.register_login_jwt.Dto.AccountRegisterDto;
-import com.datweb.spring.security.register_login_jwt.Entity.Token;
+import com.datweb.spring.security.register_login_jwt.Entity.VerifyToken;
 import com.datweb.spring.security.register_login_jwt.Entity.Role;
 import com.datweb.spring.security.register_login_jwt.Entity.User;
-import com.datweb.spring.security.register_login_jwt.Repository.TokenRepository;
+import com.datweb.spring.security.register_login_jwt.Repository.VerifyTokenRepository;
 import com.datweb.spring.security.register_login_jwt.Repository.UserRepository;
 import com.datweb.spring.security.register_login_jwt.Service.AuthenticationService;
 import com.datweb.spring.security.register_login_jwt.Service.JwtService;
@@ -22,7 +22,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
-    private final TokenRepository tokenRepository;
+    private final VerifyTokenRepository verifyTokenRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -38,16 +38,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return user;
     }
 
-    public Token login(AccountLoginDto accountLoginDto){
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(accountLoginDto.getEmail(), accountLoginDto.getPassword()));
-        User user = userRepository.findByEmail(accountLoginDto.getEmail()).get();
+    public VerifyToken login(AccountDto accountDto){
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(accountDto.getEmail(), accountDto.getPassword()));
+        User user = userRepository.findByEmail(accountDto.getEmail()).get();
         if (user != null) {
             String token = jwtService.generateToken(user);
-            Token tokenDto = new Token();
-            tokenDto.setToken(token);
-            tokenDto.setExpirationTime(new Date(System.currentTimeMillis()+15*60*1000));
-            tokenRepository.save(tokenDto);
-            return tokenDto;
+            VerifyToken verifyTokenDto = new VerifyToken();
+            verifyTokenDto.setToken(token);
+            verifyTokenDto.setExpirationTime(new Date(System.currentTimeMillis()+15*60*1000));
+            verifyTokenRepository.save(verifyTokenDto);
+            return verifyTokenDto;
         }
         return null;
     }

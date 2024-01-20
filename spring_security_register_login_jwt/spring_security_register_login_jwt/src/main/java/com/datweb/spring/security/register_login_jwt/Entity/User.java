@@ -22,10 +22,6 @@ public class User implements UserDetails {
     private Role role;
     private boolean enable = false;
 
-    @OneToOne
-    @JoinColumn(name = "token_id")
-    private Token token;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.toString()));

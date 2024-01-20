@@ -3,9 +3,9 @@ import com.datweb.spring.security.register_login_jwt.Dto.AccountForgotPassword;
 import com.datweb.spring.security.register_login_jwt.Dto.PasswordDto;
 import com.datweb.spring.security.register_login_jwt.Entity.User;
 import com.datweb.spring.security.register_login_jwt.Event.RegisterEvent;
-import com.datweb.spring.security.register_login_jwt.Dto.AccountLoginDto;
+import com.datweb.spring.security.register_login_jwt.Dto.AccountDto;
 import com.datweb.spring.security.register_login_jwt.Dto.AccountRegisterDto;
-import com.datweb.spring.security.register_login_jwt.Entity.Token;
+import com.datweb.spring.security.register_login_jwt.Entity.VerifyToken;
 import com.datweb.spring.security.register_login_jwt.Service.AuthenticationService;
 import com.datweb.spring.security.register_login_jwt.Service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,8 +32,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Token> login(@RequestBody AccountLoginDto accountLoginDto){
-        return ResponseEntity.ok(authenticationService.login(accountLoginDto));
+    public ResponseEntity<VerifyToken> login(@RequestBody AccountDto accountDto){
+        return ResponseEntity.ok(authenticationService.login(accountDto));
     }
 
     @GetMapping("/verify")
@@ -48,8 +48,8 @@ public class AuthController {
     @GetMapping("/resend/verify")
     public String resendVerifyPage(@RequestParam("token") String oldToken,
                                    HttpServletRequest request){
-        Token newToken = userService.generateResendToken(oldToken);
-        userService.resendVerifyLink(newToken.getToken(), userService.applicationUrl(request));
+        VerifyToken newVerifyToken = userService.generateResendToken(oldToken);
+        userService.resendVerifyLink(newVerifyToken.getToken(), userService.applicationUrl(request));
         return "Verify link is sent";
     }
 
@@ -63,12 +63,19 @@ public class AuthController {
         return "Invalid email";
     }
 
-    @PostMapping("/savePassword")
+    @GetMapping("/savePassword")
     public String savePassword(@RequestParam("token") String token,
                                @RequestBody PasswordDto passwordDto){
         if(userService.savePassword(token, passwordDto).equals("success")){
             return "success";
         }
         return "invalid token";
+    }
+
+    @PostMapping("/changePassword")
+    public String changePassword(@RequestBody AccountDto accountDto,
+                                 HttpServletRequest request){
+        userService.sendLinkChangePassword(accountDto, userService.applicationUrl(request));
+        return "Link change password is sent";
     }
 }
